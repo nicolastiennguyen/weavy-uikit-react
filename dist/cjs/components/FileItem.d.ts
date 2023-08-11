@@ -1,0 +1,46 @@
+import React, { ReactNode } from "react";
+import { AppFeatures, FileType } from "../types/types";
+type FileProps = {
+    file: FileType;
+    className?: string;
+    onClick?: (e: any) => void;
+    onRename?: (name: string, file: FileType) => void;
+    isRenaming?: boolean;
+    onSubscribe?: (file: FileType) => void;
+    onUnsubscribe?: (file: FileType) => void;
+    onTrash?: (file: FileType) => void;
+    onRestore?: (file: FileType) => void;
+    onDeleteForever?: (file: FileType) => void;
+    onHandleError?: (file: FileType) => void;
+    statusText?: string;
+    title?: string;
+    features: string[];
+    appFeatures: AppFeatures | undefined;
+    children?: React.ReactNode;
+};
+export declare const triggerDownload: (file: FileType) => void;
+export declare const triggerExternal: (file: FileType) => void;
+export declare const triggerApplication: (file: FileType) => void;
+type FileMenuProps = {
+    file: FileType;
+    className?: string;
+    onRename?: (e: any) => void;
+    onSubscribe?: (e: any) => void;
+    onUnsubscribe?: (e: any) => void;
+    onTrash?: (e: any) => void;
+    onRestore?: (e: any) => void;
+    onDeleteForever?: (e: any) => void;
+    children?: ReactNode;
+    noWrapper?: boolean;
+    features: string[];
+    appFeatures: AppFeatures | undefined;
+    props?: React.HTMLAttributes<HTMLSpanElement>;
+};
+export declare const FileMenu: ({ file, className, onRename, onSubscribe, onUnsubscribe, onTrash, onRestore, onDeleteForever, children, noWrapper, features, appFeatures, ...props }: FileMenuProps) => JSX.Element;
+declare const _default: {
+    Row: ({ file, className, onClick, onRename, isRenaming, onSubscribe, onUnsubscribe, onTrash, onRestore, onDeleteForever, onHandleError, statusText, title, features, appFeatures, children }: FileProps) => JSX.Element;
+    Card: ({ file, className, onClick, onRename, isRenaming, onSubscribe, onUnsubscribe, onTrash, onRestore, onDeleteForever, onHandleError, statusText, title, features, appFeatures, children }: FileProps) => JSX.Element;
+    Item: ({ file, className, onClick, onRename, isRenaming, onSubscribe, onUnsubscribe, onTrash, onRestore, onDeleteForever, onHandleError, statusText, title, features, appFeatures, children }: FileProps) => JSX.Element;
+    Menu: ({ file, className, onRename, onSubscribe, onUnsubscribe, onTrash, onRestore, onDeleteForever, children, noWrapper, features, appFeatures, ...props }: FileMenuProps) => JSX.Element;
+};
+export default _default;

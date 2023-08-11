@@ -1,4 +1,5 @@
 import React, { createContext } from "react";
+import { BrowserRouter as Router } from "react-router-dom"; // Import BrowserRouter
 import { QueryClient, QueryClientProvider } from "react-query";
 import UserProvider from "./UserContext";
 import dayjs from 'dayjs';
@@ -61,21 +62,22 @@ const WeavyProvider = ({ children, client, options }: WeavyProviderProperties) =
   return (
     <>
       {client &&
-        <QueryClientProvider client={queryClient}>
-          <WeavyContext.Provider value={{ client, options: opts }}>
-            <UserProvider client={client}>
-              <CloudFilesProvider options={opts} client={client}>
-                <PreviewProvider client={client}>
-                  {children}
-                </PreviewProvider>
-              </CloudFilesProvider>
-            </UserProvider>
-          </WeavyContext.Provider>
-        </QueryClientProvider>
+        <Router>
+          <QueryClientProvider client={queryClient}>
+            <WeavyContext.Provider value={{ client, options: opts }}>
+              <UserProvider client={client}>
+                <CloudFilesProvider options={opts} client={client}>
+                  <PreviewProvider client={client}>
+                    {children}
+                  </PreviewProvider>
+                </CloudFilesProvider>
+              </UserProvider>
+            </WeavyContext.Provider>
+          </QueryClientProvider>
+        </Router> 
       }
     </>
   )
 };
 
 export default WeavyProvider;
-

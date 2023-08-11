@@ -22,12 +22,13 @@ type Props = {
     onHandleError?: (file: FileType) => void
 }
 
-const FileList = ({ appId, view = "list", order, trashed = false, features, appFeatures, onSorting, onHandleError }: Props) => {
+const FileList = ({ appId, view = "list", order, trashed = false, features, appFeatures, onSorting, onHandleError, openFolder }: Props) => {
     
     const infiniteFiles = useFileList(appId, { meta: { order: order, trashed: trashed }});
     const { isLoading, data, fetchNextPage, hasNextPage, isFetchingNextPage, remove: resetInfiniteFiles } = infiniteFiles;
 
     const [currentPreview, setCurrentPreview] = useState<number>();
+    const [showChevron, setShowChevron] = useState(false);
 
     const openPreview = (previewId: number) => {
         setCurrentPreview(previewId);
@@ -70,13 +71,28 @@ const FileList = ({ appId, view = "list", order, trashed = false, features, appF
                                 return <FileItem.Card
                                     key={'file-card' + file.id}
                                     file={file}
-                                    onClick={(e: any) => !file.is_trashed && openPreview(file.id)}
+                                    onClick={(e: any) => {
+                                        if (file.metadata && file.metadata.type === 'folder') {
+                                            openFolder(e.target.innerText)
+                                        } else if (!file.is_trashed) {
+                                            openPreview(file.id)
+                                        }
+                                    }}
                                     onRename={(name: string) => mutateFileRename.mutateAsync({ file: file, name: name})}
                                     onSubscribe={(file: FileType) => mutateFileSubscribe.mutateAsync({ file: file })}
                                     onUnsubscribe={(file: FileType) => mutateFileUnsubscribe.mutateAsync({ file: file })}
-                                    onTrash={(file: FileType) => mutateFileTrash.mutateAsync({ file: file })}
+                                    onTrash={(file: FileType) => mutateFileTrash.mutateAsync({ file: file })}    
                                     onRestore={(file: FileType) => mutateFileRestore.mutateAsync({ file: file })}
-                                    onDeleteForever={(file: FileType) => mutateFileDeleteForever.mutateAsync({ file: file })}
+                                    // onDeleteForever={(file: FileType) => mutateFileDeleteForever.mutateAsync({ file: file })}
+
+                                    onDeleteForever={(file: FileType) => {
+                                        if (file.metadata && file.metadata.type === 'folder') {
+                                            console.log('foldered')
+                                            mutateFileDeleteForever.mutateAsync({ file: file });
+                                        } else {
+                                            mutateFileDeleteForever.mutateAsync({ file: file });
+                                        }
+                                    }}
                                     onHandleError={onHandleError}
                                     features={features}
                                     appFeatures={appFeatures}
@@ -104,8 +120,8 @@ const FileList = ({ appId, view = "list", order, trashed = false, features, appF
         { by: "modified_at", title: "Modified" },
         { by: undefined, title: "Kind" },
         { by: "size", title: "Size" }
-    ]
-
+    ]   
+    
     return (
         <>
         <table className="wy-table wy-table-hover wy-table-files">
@@ -136,13 +152,28 @@ const FileList = ({ appId, view = "list", order, trashed = false, features, appF
                                 return <FileItem.Row
                                     key={'file-row' + file.id}
                                     file={file}
-                                    onClick={(e: any) => !file.is_trashed && openPreview(file.id)}
+                                    onClick={(e: any) => {
+                                        if (file.metadata && file.metadata.type === 'folder') {
+                                            openFolder(e)
+                                        } else if (!file.is_trashed) {
+                                            openPreview(file.id)
+                                        }
+                                    }}
+                                    
                                     onRename={(name: string) => mutateFileRename.mutateAsync({ file: file, name: name})}
                                     onSubscribe={(file: FileType) => mutateFileSubscribe.mutateAsync({ file: file })}
                                     onUnsubscribe={(file: FileType) => mutateFileUnsubscribe.mutateAsync({ file: file })}
                                     onTrash={(file: FileType) => mutateFileTrash.mutateAsync({ file: file })}
                                     onRestore={(file: FileType) => mutateFileRestore.mutateAsync({ file: file })}
-                                    onDeleteForever={(file: FileType) => mutateFileDeleteForever.mutateAsync({ file: file })}
+                                    // onDeleteForever={(file: FileType) => mutateFileDeleteForever.mutateAsync({ file: file })}
+                                    onDeleteForever={(file: FileType) => {
+                                        if (file.metadata && file.metadata.type === 'folder') {
+                                            mutateFileDeleteForever.mutateAsync({ file: file });
+                                            console.log('foldered')
+                                        } else {
+                                            mutateFileDeleteForever.mutateAsync({ file: file });
+                                        }
+                                    }}
                                     onHandleError={onHandleError}
                                     features={features}
                                     appFeatures={appFeatures}

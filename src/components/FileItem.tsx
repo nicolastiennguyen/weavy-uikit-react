@@ -58,7 +58,7 @@ type FileMenuProps = {
     props?: React.HTMLAttributes<HTMLSpanElement>
 }
 
-export const FileMenu = ({ file, className, onRename, onSubscribe, onUnsubscribe, onTrash, onRestore, onDeleteForever, children, noWrapper, features, appFeatures, ...props }: FileMenuProps) => {
+export const FileMenu = ({ file, className, onRename, onSubscribe, onUnsubscribe, onTrash, onRestore, onDeleteForever, children, noWrapper, features, appFeatures, ...props }: FileMenuProps) => {    
     let { icon } = getIcon(file.name);
 
     let isNotTemp = file.id >= 1;
@@ -117,6 +117,7 @@ const clickBlock = (callback: React.EventHandler<React.SyntheticEvent>) => {
 }
 
 const FileRow = ({ file, className, onClick, onRename, isRenaming, onSubscribe, onUnsubscribe, onTrash, onRestore, onDeleteForever, onHandleError, statusText, title, features, appFeatures, children }: FileProps) => {
+    
     const [renaming, setRenaming] = useState<boolean>(false);
 
     useEffect(() => {
@@ -130,6 +131,12 @@ const FileRow = ({ file, className, onClick, onRename, isRenaming, onSubscribe, 
     const fileDate = dayjs.utc(fileChangedAt).tz(dayjs.tz.guess());
 
     let { icon } = getIcon(file.name);
+    if (file && file.metadata && file.metadata.type === 'folder') {
+        icon = 'folder'
+        file.kind = ''
+        fileSize = ''
+    }
+
     let ext = getExtension(file.name);
 
     const onClickWrapper = (e: React.MouseEvent) => {
@@ -168,7 +175,7 @@ const FileRow = ({ file, className, onClick, onRename, isRenaming, onSubscribe, 
                 file.status === "error" ? <Icon.UI name="alert-octagon" color="error" size={24} title={file.statusText || statusText} /> :
                 file.status === "conflict" ? <Icon.UI name="alert" color="yellow" size={24} title={file.statusText || statusText} /> :
                 file.status === "pending" ? <Spinner.UI spin={!file.progress} progress={file.progress} /> :
-                <Icon.UI name={icon} size={24} className={classNames("wy-kind-" + toKebabCase(file.kind), "wy-ext-" + ext.substring(1))} />
+                <Icon.UI name={icon} color="yellow" size={24} className={classNames("wy-kind-" + toKebabCase(file.kind), "wy-ext-" + ext.substring(1))} />
             }</td>
             <td>{renaming && onRename ? <>
                 <input 
@@ -227,6 +234,7 @@ const FileCard = ({ file, className, onClick, onRename, isRenaming, onSubscribe,
     }, [isRenaming]);
 
     let { icon } = getIcon(file.name);
+
     let ext = getExtension(file.name);
 
     const onClickWrapper = (e: React.MouseEvent) => {
@@ -323,6 +331,7 @@ const FileItem = ({ file, className, onClick, onRename, isRenaming, onSubscribe,
     }, [isRenaming]);
 
     let { icon } = getIcon(file.name);
+
     let ext = getExtension(file.name);
 
     const onClickWrapper = (e: React.MouseEvent) => {

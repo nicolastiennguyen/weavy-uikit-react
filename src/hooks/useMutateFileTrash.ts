@@ -91,6 +91,15 @@ export function useMutateFileDeleteForever(filesKey: MutationKey) {
     }
 
     const deleteForeverMutation = useMutation(async ({ file }: MutateProps) => {
+        console.log(file)
+
+        // ##########
+        if (file.metadata && file.metadata.type === 'folder') {
+            console.log('went in here too')
+        }
+        // ##########
+
+
         if (file.id >= 1 && file.is_trashed) {
             const response = await client.post("/api/files/" + file.id, "DELETE","");
             if (!response.ok) {

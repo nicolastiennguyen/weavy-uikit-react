@@ -72,6 +72,8 @@ export default class WeavyClient implements IWeavyClient {
             headers: headers
         });
 
+        console.log(method, body, headers)
+
         if (!response.ok) {
             if ((response.status === 401 || response.status === 403) && retry) {
                 await this.tokenFactoryInternal(true);                
@@ -80,6 +82,8 @@ export default class WeavyClient implements IWeavyClient {
 
             //console.error(`Error calling endpoint ${url}`, response)
         }
+        
+        console.log(response)
 
         return response;
     };
