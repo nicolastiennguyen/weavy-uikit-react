@@ -5,7 +5,7 @@ import { CreateFileProps } from "./useMutateFile";
 
 export const useMutateFilesCreate = (appId: number, tags) => {
     const { client } = useContext(WeavyContext);
-    
+
     if (!client) {
         throw new Error('useMutateFile must be used within an WeavyProvider');
     }
@@ -16,9 +16,9 @@ export const useMutateFilesCreate = (appId: number, tags) => {
             JSON.stringify({ blob_id: blob.id, replace: replace, tags: tags }));
 
         if (!response.ok) {
-            throw <ServerErrorResponse> await response.json();
+            throw <ServerErrorResponse>await response.json();
         }
-        
-        return <FileType> await response.json();
+
+        return <FileType>await response.json();
     }
 }

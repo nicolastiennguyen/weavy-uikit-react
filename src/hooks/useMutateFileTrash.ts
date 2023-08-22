@@ -24,7 +24,7 @@ export function useMutateFileTrash(filesKey: MutationKey) {
         } else {
             throw new Error(`Could not trash ${file.name}.`);
         }
-    },{
+    }, {
         onMutate: async (variables: MutateProps) => {
             updateCacheItem(queryClient, filesKey, variables.file.id, (existingFile: FileType) => Object.assign(existingFile, { is_trashed: true, status: "pending" }));
         },
@@ -54,15 +54,15 @@ export function useMutateFileRestore(filesKey: MutationKey) {
 
     const restoreMutation = useMutation(async ({ file }: MutateProps) => {
         if (file.id >= 1) {
-            const response = await client.post("/api/files/" + file.id + "/restore", "POST","");
+            const response = await client.post("/api/files/" + file.id + "/restore", "POST", "");
             if (!response.ok) {
-                throw <ServerErrorResponse> await response.json();
+                throw <ServerErrorResponse>await response.json();
             }
             return response.json();
         } else {
-            throw <ServerErrorResponse> {status: 400, title: `Could not restore ${file.name}.`};
+            throw <ServerErrorResponse>{ status: 400, title: `Could not restore ${file.name}.` };
         }
-    },{
+    }, {
         onMutate: async (variables: MutateProps) => {
             updateCacheItem(queryClient, filesKey, variables.file.id, (existingFile: FileType) => Object.assign(existingFile, { is_trashed: false }));
         },
@@ -91,24 +91,49 @@ export function useMutateFileDeleteForever(filesKey: MutationKey) {
     }
 
     const deleteForeverMutation = useMutation(async ({ file }: MutateProps) => {
-        console.log(file)
 
         // ##########
         if (file.metadata && file.metadata.type === 'folder') {
-            console.log('went in here too')
+            // delete main folder app itself
+            const ress = await fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps/${file.metadata.child_app_id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`
+                },
+            })
+
+            // grab all tagged with main folder app ID and delete
+            const res = await fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps?tag=${file.metadata.child_app_id}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`,
+                    'Content-Type': 'application/json',
+                },
+            })
+            const data = await res.json()
+            const associated = data.data
+            associated?.forEach(app => {
+                const temp = fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps/${app.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`,
+                    },
+                })
+            })
+
         }
         // ##########
 
 
         if (file.id >= 1 && file.is_trashed) {
-            const response = await client.post("/api/files/" + file.id, "DELETE","");
+            const response = await client.post("/api/files/" + file.id, "DELETE", "");
             if (!response.ok) {
-                throw <ServerErrorResponse> await response.json();
+                throw <ServerErrorResponse>await response.json();
             }
         } else {
-            throw <ServerErrorResponse> {status: 400, title: `Could not delete ${file.name} forever.`};
+            throw <ServerErrorResponse>{ status: 400, title: `Could not delete ${file.name} forever.` };
         }
-    },{
+    }, {
         onMutate: async (variables: MutateProps) => {
             updateCacheItem(queryClient, filesKey, variables.file.id, (existingFile: FileType) => Object.assign(existingFile, { status: "pending" }));
         },

@@ -13,12 +13,12 @@ export default function useFileList(appId: number | null, options: any = {}) {
     if (!client) {
         throw new Error('useFileList must be used within an WeavyProvider');
     }
-    
+
     const queryClient = useQueryClient();
 
     const filesKey = ['files', appId];
 
-    useEffect(() =>  {
+    useEffect(() => {
         // Refetch data when meta changes
         queryClient.removeQueries({
             queryKey: filesKey,
@@ -30,28 +30,28 @@ export default function useFileList(appId: number | null, options: any = {}) {
                 }
                 return mismatch;
             }
-          })
+        })
     }, [options]);
 
     const updateDataWithMutations = (data: any) => {
         const mutatingFiles = queryClient.getMutationCache()
-        .findAll({mutationKey: filesKey, predicate: (mutation: Mutation) => !!(<unknown>mutation as FileMutation).state.context?.file})
-        .map((mutation: Mutation) => (<unknown>mutation as FileMutation).state.context!.file);
-        
+            .findAll({ mutationKey: filesKey, predicate: (mutation: Mutation) => !!(<unknown>mutation as FileMutation).state.context?.file })
+            .map((mutation: Mutation) => (<unknown>mutation as FileMutation).state.context!.file);
+
         const meta = queryClient.getQueryCache().find<FilesResult>(filesKey)?.meta;
         const order = meta?.order as FileOrder;
-        
+
         mutatingFiles.forEach((file) => {
             //if (meta?.trashed === file.is_trashed) {
-                if (file.id < 1 && file.status !== "ok" && file.status !== "error") {
-                    let existingFile = findAnyExistingItem<FileType>(data, "name", file.name, true);
-                    if (existingFile) {
-                        file.id = existingFile.id;
-                    }
-                    data = addToQueryData(data, file, order);
-                } else {
-                    data = updateQueryData(data, file.id, (cacheFile: FileType) => { Object.assign(cacheFile, file)});
+            if (file.id < 1 && file.status !== "ok" && file.status !== "error") {
+                let existingFile = findAnyExistingItem<FileType>(data, "name", file.name, true);
+                if (existingFile) {
+                    file.id = existingFile.id;
                 }
+                data = addToQueryData(data, file, order);
+            } else {
+                data = updateQueryData(data, file.id, (cacheFile: FileType) => { Object.assign(cacheFile, file) });
+            }
             //}
         });
         return data;
@@ -68,18 +68,18 @@ export default function useFileList(appId: number | null, options: any = {}) {
         }
 
         const response = await client.get(url);
-        return await response.json();        
+        return await response.json();
     };
     var opts: Omit<UseInfiniteQueryOptions<FilesResult, unknown, FilesResult, FilesResult, QueryKey>, "queryKey" | "queryFn"> | undefined = {
-        ...options, 
-        getNextPageParam: (lastPage:any, pages:any) => { 
-            if (lastPage?.end < lastPage?.count)  {                
+        ...options,
+        getNextPageParam: (lastPage: any, pages: any) => {
+            if (lastPage?.end < lastPage?.count) {
                 return pages.length * PAGE_SIZE;
             }
         },
-        
+
         select: updateDataWithMutations
     };
-        
+
     return useInfiniteQuery<FilesResult>(['files', appId], getFiles, opts)
 }

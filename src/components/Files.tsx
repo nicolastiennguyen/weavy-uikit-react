@@ -20,11 +20,12 @@ import { useDropzone } from 'react-dropzone';
 import { BlobType, FileOrder, FileType, FileView } from '../types/types';
 import useFeatures from '../hooks/useFeatures';
 import { Feature, hasFeature } from '../utils/featureUtils';
+
+
 import Modal from 'react-modal';
 import { UserContext } from '../contexts/UserContext';
 import { useHistory, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { render } from 'react-dom';
 
 
 
@@ -44,7 +45,7 @@ const Files = ({
     const [navigationPathIDs, setNavigationPathIDs] = useState({
         'Home': 15
     })
-      
+
     const [selectedFiles, setSelectedFiles] = useState<string>("");
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [folderName, setFolderName] = useState('');
@@ -63,17 +64,15 @@ const Files = ({
 
     const [showUploadDetails, setShowUploadDetails] = useState<boolean>(false);
 
-    
+
     const tags = []
     // console.log(navigationPath, navigationPathIDs, 'OUTSIDE OUTSIDE OUTSIDE')
-        
+
     navigationPath.forEach(path => {
         if (navigationPathIDs[path] !== undefined) {
             tags.push(navigationPathIDs[path])
         }
     })
-
-    console.log(tags, 'TAGS')
 
     const createFile = useMutateFilesCreate(appId!, tags);
     const uploadFileMutation = useMutateFileUpload(['files', appId!], createFile);
@@ -91,14 +90,14 @@ const Files = ({
     // on first load only
     useEffect(() => {
         const allCookies = Cookies.get();
-        // console.log("All cookies:", allCookies);
-        
+
         if (data) {
             const storedAppId = Cookies.get('appId')
             const storedNavigationPath = Cookies.get('navigationPath');
             const storedNavigationPathIDs = Cookies.get('navigationPathIDs');
+            console.log(storedAppId, storedNavigationPath, storedNavigationPathIDs)
 
-            if (data.id != appId) {
+            if (data.id != appId && storedAppId !== undefined) {
                 setAppId(storedAppId)
                 Cookies.set('appId', storedAppId)
                 history.push(`/files/${storedAppId}`)
@@ -114,7 +113,7 @@ const Files = ({
                 setNavigationPath(['Home'])
             }
         } else {
-            setAppId(undefined);
+            setAppId(15);
         }
     }, [data]);
 
@@ -142,6 +141,7 @@ const Files = ({
 
     // add uploaded files
     const handleCreateFile = async (blob: BlobType, file?: FileType, replace?: boolean) => {
+        console.log('1')
         let fileProps: CreateFileProps = { blob, file, replace };
         await createFileMutation.mutateAsync(fileProps, {
             onSuccess: (data: FileType) => {
@@ -152,10 +152,13 @@ const Files = ({
 
     // upload files
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        console.log('2')
         if (e.target.files) {
             for (var i = 0; i < e.target.files.length; i++) {
                 let file = e.target.files[i];
+                console.log(file)
                 let fileProps = { file: file }
+                console.log(file, fileProps)
                 uploadFileMutation.mutateAsync(fileProps, {
                     onSuccess: (data: BlobType) => {
                         //console.log("All files uploaded")
@@ -253,19 +256,19 @@ const Files = ({
     const openModal = () => {
         setModalIsOpen(true);
     };
-    
+
     const closeModal = () => {
         setModalIsOpen(false);
-      };
+    };
 
 
     const createFolder = async () => {
-        const response = await fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps/${appId}/files`, {
+        await fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps/${appId}/files`, {
             method: "POST",
             headers: {
                 'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`,
                 'Content-Type': 'application/json',
-            }, 
+            },
             body: JSON.stringify({
                 blob_id: 15,
                 name: folderName,
@@ -275,45 +278,25 @@ const Files = ({
                 tags: tags
             })
         })
-
-        const data = await response.json()
-        console.log(data)
         setFolderName('')
-
-        // function to update app with parent file ID using data.id as param
-
-        // const res = await fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps/${appId}`, {
-        //     method: "PATCH",
-        //     headers: {
-        //         'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`,
-        //         'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify({
-        //         metadata: {
-        //             type: "folder",
-        //             child_app_id: data.id
-        //         }
-        //     }) 
-        // })
     };
-    
 
-    const openFolder = async (e) => {
+
+    const openFolder = async (folderName) => {
         try {
-            const folderName = e.target.innerText
             const response = await fetch('https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps/init', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`,
                     'Content-Type': 'application/json',
-                }, 
+                },
                 body: JSON.stringify({
                     "app": {
                         "type": "files",
                         "uid": `${user.uid}-${appId}-${folderName.replace(/ /g, "-")}`,
                         "tags": tags,
                         metadata: {
-                            parent_app_id: appId,
+                            parent_app_id: appId
                         },
                     },
                     "user": {
@@ -330,11 +313,39 @@ const Files = ({
                 ...prevMap,
                 [folderName]: data.id
             }))
+
+            const res = await fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps/${appId}/files`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`,
+                    'Content-Type': 'application/json',
+                },
+            })
+            const datas = await res.json()
+            const files = datas.data
+            files.forEach(file => {
+                if (file.name === folderName) {
+                    const temp = fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/files/${file.id}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            metadata: {
+                                type: "folder",
+                                child_app_id: data.id
+                            }
+                        })
+                    })
+                }
+            })
+
         } catch (error) {
             console.log(error)
         }
     }
-    
+
     const returnHome = () => {
         Cookies.set('appId', 15)
         setAppId(Cookies.get('appId'))
@@ -345,25 +356,25 @@ const Files = ({
         })
     }
 
-      const handleFolderClick = (e, folderName) => {
+    const handleFolderClick = (e, folderName) => {
         e.preventDefault();
-      
+
         // Check if the folderName is already present in the navigationPath
         const isFolderInPath = navigationPath.includes(folderName);
-      
+
         if (isFolderInPath) {
-          // If the folder is already in the path, find its index in the array
-          const folderIndex = navigationPath.indexOf(folderName);
-          
-          // If the folder is not the last one in the path, remove all the folders after it
-          if (folderIndex < navigationPath.length - 1) {
-              setNavigationPath(prevPath => prevPath.slice(0, folderIndex + 1));
+            // If the folder is already in the path, find its index in the array
+            const folderIndex = navigationPath.indexOf(folderName);
+
+            // If the folder is not the last one in the path, remove all the folders after it
+            if (folderIndex < navigationPath.length - 1) {
+                setNavigationPath(prevPath => prevPath.slice(0, folderIndex + 1));
             }
             const newAppId = navigationPathIDs[folderName];
             setAppId(newAppId)
             history.push(`/files/${newAppId}`)
-            
-            
+
+
             const updatedNavigationPathIDs = {};
             if (folderIndex >= 0) {
                 for (let i = 0; i <= folderIndex; i++) {
@@ -374,9 +385,9 @@ const Files = ({
             setNavigationPathIDs(updatedNavigationPathIDs)
 
         }
-      };
-      
-    
+    };
+
+
 
     useEffect(() => {
         const handleBeforeUnload = () => {
@@ -384,14 +395,14 @@ const Files = ({
             Cookies.set('navigationPath', JSON.stringify(navigationPath))
             Cookies.set('navigationPathIDs', JSON.stringify(navigationPathIDs))
         };
-    
+
         const handlePopState = async () => {
-          console.log('Back button pressed! For this appId:', appId);
-          const response = await fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps/${appId}/`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`,
-            }
+            console.log('Back button pressed! For this appId:', appId);
+            const response = await fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps/${appId}/`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`,
+                }
             })
             const data = await response.json()
             console.log(data)
@@ -403,15 +414,15 @@ const Files = ({
                 history.push('')
             }
         };
-    
+
         window.addEventListener('beforeunload', handleBeforeUnload);
         window.addEventListener('popstate', handlePopState);
-    
+
         return () => {
-          window.removeEventListener('beforeunload', handleBeforeUnload);
-          window.removeEventListener('popstate', handlePopState);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            window.removeEventListener('popstate', handlePopState);
         };
-      }, [appId]);      
+    }, [appId]);
 
     useEffect(() => {
         if (appId) {
@@ -429,22 +440,21 @@ const Files = ({
     const renderNavigationPath = () => {
         return (
             <nav aria-label="breadcrumb">
-                <ol className="breadcrumb" style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center' }}>
+                <ol className="breadcrumb" style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'start' }}>
                     {navigationPath.map((path, index) => {
                         const isLastIndex = index === navigationPath.length - 1;
-    
+
                         return (
                             <React.Fragment key={index}>
                                 {index > 0 && <Icon.UI name="chevron-right" style={{ marginLeft: '8px', marginRight: '8px' }} />}
-                                <li className={`breadcrumb-item`} title={path} style={{ fontWeight: isLastIndex ? 'bold' : 'normal' }}>
+                                <li className={`breadcrumb-item`} title={path} style={{ fontWeight: isLastIndex ? 'bold' : 'normal', margin: '0 4px' }}>
                                     {isLastIndex ? (
                                         <span>{path}</span>
                                     ) : (
-                                        <span onClick={(e) => handleFolderClick(e, path)} style={{
-                                            color: '#007bff', //change this color to match
-                                            textDecoration: 'underline', 
-                                            cursor: 'pointer', 
-                                          }}>{path}</span>
+                                        <a href="#" onClick={(e) => handleFolderClick(e, path)} style={{
+                                            textDecoration: 'none',
+                                            cursor: 'pointer',
+                                        }}>{path}</a>
                                     )}
                                 </li>
                             </React.Fragment>
@@ -454,8 +464,10 @@ const Files = ({
             </nav>
         );
     };
-    
-    
+
+
+
+
     return (
         <>
             {appId && dataFeatures &&
@@ -464,7 +476,7 @@ const Files = ({
                         <nav className="wy-toolbar">
 
                             <div className="wy-toolbar-buttons">
-                            <button onClick={returnHome}>Home</button>
+                                {/* <button onClick={returnHome}>Home</button> */}
                                 {(hasFeature(dataFeatures, Feature.Attachments, features?.attachments) || hasFeature(dataFeatures, Feature.CloudFiles, features?.cloudFiles)) &&
                                     <Dropdown.UI title="Add files" disabled={!appId} buttonContent={
                                         <><Icon.UI name="plus" /></>
@@ -481,23 +493,23 @@ const Files = ({
                                                     overlayClassName="modal-overlay"
                                                 >
                                                     <button className="close-button" onClick={closeModal}>
-                                                        <Icon.UI name="close" /> 
+                                                        <Icon.UI name="close" />
                                                     </button>
                                                     <h2>Create New Folder</h2>
                                                     <input
-                                                    type="text"
-                                                    value={folderName}
-                                                    onChange={(e) => setFolderName(e.target.value)}
-                                                    placeholder="Enter folder name"
-                                                    className="input-field"
+                                                        type="text"
+                                                        value={folderName}
+                                                        onChange={(e) => setFolderName(e.target.value)}
+                                                        placeholder="Enter folder name"
+                                                        className="input-field"
                                                     />
                                                     <div className="button-container">
-                                                    <button onClick={() => {
-                                                        createFolder();
-                                                        closeModal();
-                                                    }} className="create-button">
-                                                        Create Folder
-                                                    </button>
+                                                        <button onClick={() => {
+                                                            createFolder();
+                                                            closeModal();
+                                                        }} className="create-button">
+                                                            Create Folder
+                                                        </button>
                                                     </div>
                                                 </Modal>
                                                 <Dropdown.Item onClick={openFileInput}><Icon.UI name="attachment" /> Upload file</Dropdown.Item>

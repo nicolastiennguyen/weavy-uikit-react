@@ -58,7 +58,7 @@ type FileMenuProps = {
     props?: React.HTMLAttributes<HTMLSpanElement>
 }
 
-export const FileMenu = ({ file, className, onRename, onSubscribe, onUnsubscribe, onTrash, onRestore, onDeleteForever, children, noWrapper, features, appFeatures, ...props }: FileMenuProps) => {    
+export const FileMenu = ({ file, className, onRename, onSubscribe, onUnsubscribe, onTrash, onRestore, onDeleteForever, children, noWrapper, features, appFeatures, ...props }: FileMenuProps) => {
     let { icon } = getIcon(file.name);
 
     let isNotTemp = file.id >= 1;
@@ -66,25 +66,27 @@ export const FileMenu = ({ file, className, onRename, onSubscribe, onUnsubscribe
     return (
         <Dropdown.UI directionX='left' className={className} disabled={file.status && file.status !== "ok"} noWrapper={noWrapper} {...props}>
             {isNotTemp && file.is_trashed && <>
-                {onRestore && <Dropdown.Item onClick={onRestore}><Icon.UI name="delete-restore"/>Restore</Dropdown.Item>}
-                {onRestore && onDeleteForever && <Dropdown.Divider/>}
-                {onDeleteForever && <Dropdown.Item onClick={onDeleteForever}><Icon.UI name="delete-forever"/>Delete</Dropdown.Item>}
+                {onRestore && <Dropdown.Item onClick={onRestore}><Icon.UI name="delete-restore" />Restore</Dropdown.Item>}
+                {onRestore && onDeleteForever && <Dropdown.Divider />}
+                {onDeleteForever && <Dropdown.Item onClick={onDeleteForever}><Icon.UI name="delete-forever" />Delete</Dropdown.Item>}
             </>}
             {!file.is_trashed && <>
                 {(file.external_url && hasFeature(features, Feature.WebDAV, appFeatures?.webDAV)) ?
                     <Dropdown.Item onClick={() => triggerExternal(file)}><Icon.UI name={icon} /> {`Open in ${file.provider}`}</Dropdown.Item>
-                : <>
-                    { file.application_url &&
-                        <Dropdown.Item onClick={() => triggerApplication(file)}><Icon.UI name={file.provider ? toKebabCase(file.provider) : icon } /> {`Open in ${file.provider || 'app'}`}</Dropdown.Item>
-                    }
-                    <Dropdown.Item onClick={() => triggerDownload(file)}><Icon.UI name="download" size={24} /> Download</Dropdown.Item>
-                </>}
+                    : <>
+                        {file.application_url &&
+                            <Dropdown.Item onClick={() => triggerApplication(file)}><Icon.UI name={file.provider ? toKebabCase(file.provider) : icon} /> {`Open in ${file.provider || 'app'}`}</Dropdown.Item>
+                        }
+                        {(!file.metadata || file.metadata.type !== 'folder') &&
+                            <Dropdown.Item onClick={() => triggerDownload(file)}><Icon.UI name="download" size={24} /> Download</Dropdown.Item>
+                        }
+                    </>}
                 {isNotTemp && <>
                     {onRename && <Dropdown.Item onClick={onRename}><Icon.UI name="textbox" size={24} /> Rename</Dropdown.Item>}
                     {!file.is_subscribed && onSubscribe && <Dropdown.Item onClick={onSubscribe}><Icon.UI name="bell" size={24} /> Subscribe</Dropdown.Item>}
                     {file.is_subscribed && onUnsubscribe && <Dropdown.Item onClick={onUnsubscribe}><Icon.UI name="bell-off" size={24} /> Unsubscribe</Dropdown.Item>}
                     {onTrash && <>
-                        <Dropdown.Divider/>
+                        <Dropdown.Divider />
                         <Dropdown.Item onClick={onTrash}><Icon.UI name="delete" size={24} /> Trash</Dropdown.Item>
                     </>}
                 </>}
@@ -98,7 +100,7 @@ export const FileMenu = ({ file, className, onRename, onSubscribe, onUnsubscribe
 const clickBlock = (callback: React.EventHandler<React.SyntheticEvent>) => {
     return (e: React.SyntheticEvent) => {
         e.preventDefault();
-        
+
         const onClickBlock = (e: Event) => {
             console.debug("Blocked event", e.type);
             e.preventDefault();
@@ -106,18 +108,18 @@ const clickBlock = (callback: React.EventHandler<React.SyntheticEvent>) => {
         }
 
         // Disable any click for a short while
-        document.addEventListener("click", onClickBlock, { once: true, capture: true})
+        document.addEventListener("click", onClickBlock, { once: true, capture: true })
 
         setTimeout(() => {
-            document.removeEventListener("click", onClickBlock, { capture: true})
-        }, 500); 
+            document.removeEventListener("click", onClickBlock, { capture: true })
+        }, 500);
 
         return callback(e);
     }
 }
 
 const FileRow = ({ file, className, onClick, onRename, isRenaming, onSubscribe, onUnsubscribe, onTrash, onRestore, onDeleteForever, onHandleError, statusText, title, features, appFeatures, children }: FileProps) => {
-    
+
     const [renaming, setRenaming] = useState<boolean>(false);
 
     useEffect(() => {
@@ -157,12 +159,12 @@ const FileRow = ({ file, className, onClick, onRename, isRenaming, onSubscribe, 
         setRenaming(false);
     };
 
-    const handleRenameKey = (e: any) => { 
+    const handleRenameKey = (e: any) => {
         if (e.key === "Escape") {
             e.preventDefault();
             e.target.value = file.name;
             e.target.blur();
-        } else if(e.key === "Enter") {
+        } else if (e.key === "Enter") {
             e.preventDefault();
             handleRename(e);
         }
@@ -173,30 +175,30 @@ const FileRow = ({ file, className, onClick, onRename, isRenaming, onSubscribe, 
         <tr className={classNames({ "wy-table-trashed": file.is_trashed }, className)} onClick={onClickWrapper} title={title}>
             <td className="wy-table-cell-icon">{
                 file.status === "error" ? <Icon.UI name="alert-octagon" color="error" size={24} title={file.statusText || statusText} /> :
-                file.status === "conflict" ? <Icon.UI name="alert" color="yellow" size={24} title={file.statusText || statusText} /> :
-                file.status === "pending" ? <Spinner.UI spin={!file.progress} progress={file.progress} /> :
-                <Icon.UI name={icon} color="yellow" size={24} className={classNames("wy-kind-" + toKebabCase(file.kind), "wy-ext-" + ext.substring(1))} />
+                    file.status === "conflict" ? <Icon.UI name="alert" color="yellow" size={24} title={file.statusText || statusText} /> :
+                        file.status === "pending" ? <Spinner.UI spin={!file.progress} progress={file.progress} /> :
+                            <Icon.UI name={icon} color="yellow" size={24} className={classNames("wy-kind-" + toKebabCase(file.kind), "wy-ext-" + ext.substring(1))} />
             }</td>
             <td>{renaming && onRename ? <>
-                <input 
+                <input
                     type="text"
                     maxLength={256}
-                    className="wy-input" 
-                    defaultValue={file.name} 
-                    onBlur={clickBlock(handleRename)} 
+                    className="wy-input"
+                    defaultValue={file.name}
+                    onBlur={clickBlock(handleRename)}
                     onKeyUp={handleRenameKey}
-                    onClick={(e: any) => e.preventDefault()} 
+                    onClick={(e: any) => e.preventDefault()}
                     onFocus={(e: any) => {
                         const i = e.target.value.lastIndexOf(".");
                         if (i === -1) {
                             e.target.select();
-                          } else {
+                        } else {
                             e.target.setSelectionRange(0, i);
-                          }                            
-                    }} 
+                        }
+                    }}
                     autoFocus />
-                </> 
-                : 
+            </>
+                :
                 <>
                     <span title={file.name + ((statusText || file.statusText) ? `: ${statusText || file.statusText}` : '')}>{file.name}{(statusText || file.statusText) && <>: <em>{statusText || file.statusText}</em></>}</span>
                 </>
@@ -206,9 +208,9 @@ const FileRow = ({ file, className, onClick, onRename, isRenaming, onSubscribe, 
             <td><span>{fileSize}</span></td>
             <td className="wy-table-cell-icon">
                 {children || <>
-                    <FileMenu 
-                        file={file} 
-                        onRename={onRename ? () => setRenaming(true) : undefined} 
+                    <FileMenu
+                        file={file}
+                        onRename={onRename ? () => setRenaming(true) : undefined}
                         onSubscribe={onSubscribe?.bind(FileRow, file)}
                         onUnsubscribe={onUnsubscribe?.bind(FileRow, file)}
                         onTrash={onTrash?.bind(FileRow, file)}
@@ -217,7 +219,7 @@ const FileRow = ({ file, className, onClick, onRename, isRenaming, onSubscribe, 
                         noWrapper={true}
                         features={features}
                         appFeatures={appFeatures}
-                    /> 
+                    />
                 </>}
             </td>
         </tr>
@@ -234,6 +236,10 @@ const FileCard = ({ file, className, onClick, onRename, isRenaming, onSubscribe,
     }, [isRenaming]);
 
     let { icon } = getIcon(file.name);
+
+    if (file && file.metadata && file.metadata.type === 'folder') {
+        icon = 'folder'
+    }
 
     let ext = getExtension(file.name);
 
@@ -255,12 +261,12 @@ const FileCard = ({ file, className, onClick, onRename, isRenaming, onSubscribe,
         setRenaming(false);
     };
 
-    const handleRenameKey = (e: any) => { 
+    const handleRenameKey = (e: any) => {
         if (e.key === "Escape") {
             e.preventDefault();
             e.target.value = file.name;
             e.target.blur();
-        } else if(e.key === "Enter") {
+        } else if (e.key === "Enter") {
             e.preventDefault();
             handleRename(e);
         }
@@ -275,9 +281,9 @@ const FileCard = ({ file, className, onClick, onRename, isRenaming, onSubscribe,
                     file.status === "pending" && <Spinner.UI spin={!file.progress} progress={file.progress} />
                 }
                 {children || <>
-                    <FileMenu 
-                        file={file} 
-                        onRename={onRename ? () => setRenaming(true) : undefined} 
+                    <FileMenu
+                        file={file}
+                        onRename={onRename ? () => setRenaming(true) : undefined}
                         onSubscribe={onSubscribe?.bind(FileRow, file)}
                         onUnsubscribe={onUnsubscribe?.bind(FileRow, file)}
                         onTrash={onTrash?.bind(FileRow, file)}
@@ -285,34 +291,34 @@ const FileCard = ({ file, className, onClick, onRename, isRenaming, onSubscribe,
                         onDeleteForever={onDeleteForever?.bind(FileRow, file)}
                         features={features}
                         appFeatures={appFeatures}
-                    /> 
+                    />
                 </>}
             </div>
             {!file.is_trashed && file.thumbnail_url &&
-                <img className={classNames("wy-card-top wy-card-content", {"wy-card-top-image": file.kind === "image"})} src={file.thumbnail_url} loading="lazy" />
-            ||
+                <img className={classNames("wy-card-top wy-card-content", { "wy-card-top-image": file.kind === "image" })} src={file.thumbnail_url} loading="lazy" />
+                ||
                 <div className="wy-content-icon wy-card-top wy-card-content">
                     <Icon.UI name={icon} size={96} className={classNames("wy-kind-" + toKebabCase(file.kind), "wy-ext-" + ext.substring(1))} />
                 </div>
             }
             <div className="wy-card-label wy-card-content wy-filename">
                 {renaming && onRename ? <>
-                    <input 
+                    <input
                         type="text"
                         maxLength={256}
-                        className="wy-input" 
-                        defaultValue={file.name} 
-                        onBlur={clickBlock(handleRename)} 
+                        className="wy-input"
+                        defaultValue={file.name}
+                        onBlur={clickBlock(handleRename)}
                         onKeyUp={handleRenameKey}
-                        onClick={(e: any) => e.preventDefault()} 
+                        onClick={(e: any) => e.preventDefault()}
                         onFocus={(e: any) => {
                             const i = e.target.value.lastIndexOf(".");
                             if (i === -1) {
                                 e.target.select();
-                              } else {
+                            } else {
                                 e.target.setSelectionRange(0, i);
-                              }                            
-                        }} 
+                            }
+                        }}
                         autoFocus />
                 </> : <span title={file.name + ((statusText || file.statusText) ? `: ${statusText || file.statusText}` : '')}>{file.name}{(statusText || file.statusText) && <>: <em>{statusText || file.statusText}</em></>}</span>}
             </div>
@@ -352,12 +358,12 @@ const FileItem = ({ file, className, onClick, onRename, isRenaming, onSubscribe,
         setRenaming(false);
     };
 
-    const handleRenameKey = (e: any) => { 
+    const handleRenameKey = (e: any) => {
         if (e.key === "Escape") {
             e.preventDefault();
             e.target.value = file.name;
             e.target.blur();
-        } else if(e.key === "Enter") {
+        } else if (e.key === "Enter") {
             e.preventDefault();
             handleRename(e);
         }
@@ -367,35 +373,35 @@ const FileItem = ({ file, className, onClick, onRename, isRenaming, onSubscribe,
         <div className={classNames("wy-item", { "wy-item-trashed": file.is_trashed, "wy-item-hover": onClick && !file.is_trashed && !renaming }, className)} onClick={onClickWrapper} title={title}>
             {
                 file.status === "error" ? <Icon.UI name="alert-octagon" color="error" size={24} title={file.statusText || statusText} /> :
-                file.status === "conflict" ? <Icon.UI name="alert" color="yellow" size={24} title={file.statusText || statusText} /> :
-                file.status === "pending" ? <Spinner.UI spin={!file.progress} progress={file.progress} /> :
-                <Icon.UI name={icon} size={24} className={classNames("wy-kind-" + toKebabCase(file.kind), "wy-ext-" + ext.substring(1))} />
+                    file.status === "conflict" ? <Icon.UI name="alert" color="yellow" size={24} title={file.statusText || statusText} /> :
+                        file.status === "pending" ? <Spinner.UI spin={!file.progress} progress={file.progress} /> :
+                            <Icon.UI name={icon} size={24} className={classNames("wy-kind-" + toKebabCase(file.kind), "wy-ext-" + ext.substring(1))} />
             }
             <div className="wy-item-body">
                 {renaming && onRename ? <>
-                    <input 
+                    <input
                         type="text"
                         maxLength={256}
-                        className="wy-input" 
-                        defaultValue={file.name} 
-                        onBlur={clickBlock(handleRename)} 
+                        className="wy-input"
+                        defaultValue={file.name}
+                        onBlur={clickBlock(handleRename)}
                         onKeyUp={handleRenameKey}
-                        onClick={(e: any) => e.preventDefault()} 
-                        onFocus={(e: any) =>  {
+                        onClick={(e: any) => e.preventDefault()}
+                        onFocus={(e: any) => {
                             const i = e.target.value.lastIndexOf(".");
                             if (i === -1) {
                                 e.target.select();
-                              } else {
+                            } else {
                                 e.target.setSelectionRange(0, i);
-                              }                            
-                        }} 
+                            }
+                        }}
                         autoFocus />
-                </> : <span title={file.name + ((statusText || file.statusText) ? `: ${statusText || file.statusText}` : '')}>{file.name}{(statusText || file.statusText) && <>: <em>{statusText || file.statusText}</em></>}</span> }
+                </> : <span title={file.name + ((statusText || file.statusText) ? `: ${statusText || file.statusText}` : '')}>{file.name}{(statusText || file.statusText) && <>: <em>{statusText || file.statusText}</em></>}</span>}
             </div>
             {children || <>
-                <FileMenu 
-                    file={file} 
-                    onRename={onRename ? () => setRenaming(true) : undefined} 
+                <FileMenu
+                    file={file}
+                    onRename={onRename ? () => setRenaming(true) : undefined}
                     onSubscribe={onSubscribe?.bind(FileRow, file)}
                     onUnsubscribe={onUnsubscribe?.bind(FileRow, file)}
                     onTrash={onTrash?.bind(FileRow, file)}
@@ -403,7 +409,7 @@ const FileItem = ({ file, className, onClick, onRename, isRenaming, onSubscribe,
                     onDeleteForever={onDeleteForever?.bind(FileRow, file)}
                     features={features}
                     appFeatures={appFeatures}
-                /> 
+                />
             </>}
         </div>
     )
