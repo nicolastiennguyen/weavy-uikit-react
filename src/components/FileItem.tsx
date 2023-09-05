@@ -63,6 +63,8 @@ export const FileMenu = ({ file, className, onRename, onSubscribe, onUnsubscribe
 
     let isNotTemp = file.id >= 1;
 
+    let isFolder = file.metadata && file.metadata.type === 'folder';
+
     return (
         <Dropdown.UI directionX='left' className={className} disabled={file.status && file.status !== "ok"} noWrapper={noWrapper} {...props}>
             {isNotTemp && file.is_trashed && <>
@@ -77,14 +79,12 @@ export const FileMenu = ({ file, className, onRename, onSubscribe, onUnsubscribe
                         {file.application_url &&
                             <Dropdown.Item onClick={() => triggerApplication(file)}><Icon.UI name={file.provider ? toKebabCase(file.provider) : icon} /> {`Open in ${file.provider || 'app'}`}</Dropdown.Item>
                         }
-                        {(!file.metadata || file.metadata.type !== 'folder') &&
-                            <Dropdown.Item onClick={() => triggerDownload(file)}><Icon.UI name="download" size={24} /> Download</Dropdown.Item>
-                        }
+                        {!isFolder && <Dropdown.Item onClick={() => triggerDownload(file)}><Icon.UI name="download" size={24} /> Download</Dropdown.Item>}
                     </>}
                 {isNotTemp && <>
-                    {onRename && <Dropdown.Item onClick={onRename}><Icon.UI name="textbox" size={24} /> Rename</Dropdown.Item>}
-                    {!file.is_subscribed && onSubscribe && <Dropdown.Item onClick={onSubscribe}><Icon.UI name="bell" size={24} /> Subscribe</Dropdown.Item>}
-                    {file.is_subscribed && onUnsubscribe && <Dropdown.Item onClick={onUnsubscribe}><Icon.UI name="bell-off" size={24} /> Unsubscribe</Dropdown.Item>}
+                    {!isFolder && onRename && <Dropdown.Item onClick={onRename}><Icon.UI name="textbox" size={24} /> Rename</Dropdown.Item>}
+                    {!isFolder && !file.is_subscribed && onSubscribe && <Dropdown.Item onClick={onSubscribe}><Icon.UI name="bell" size={24} /> Subscribe</Dropdown.Item>}
+                    {!isFolder && file.is_subscribed && onUnsubscribe && <Dropdown.Item onClick={onUnsubscribe}><Icon.UI name="bell-off" size={24} /> Unsubscribe</Dropdown.Item>}
                     {onTrash && <>
                         <Dropdown.Divider />
                         <Dropdown.Item onClick={onTrash}><Icon.UI name="delete" size={24} /> Trash</Dropdown.Item>

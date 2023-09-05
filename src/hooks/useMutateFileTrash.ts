@@ -92,47 +92,49 @@ export function useMutateFileDeleteForever(filesKey: MutationKey) {
 
     const deleteForeverMutation = useMutation(async ({ file }: MutateProps) => {
 
-        // ##########
-        if (file.metadata && file.metadata.type === 'folder') {
-            // delete main folder app itself
-            const ress = await fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps/${file.metadata.child_app_id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`
-                },
-            })
+        console.log(file)
 
-            // grab all tagged with main folder app ID and delete
-            const res = await fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps?tag=${file.metadata.child_app_id}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`,
-                    'Content-Type': 'application/json',
-                },
-            })
-            const data = await res.json()
-            const associated = data.data
-            associated?.forEach(app => {
-                const temp = fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps/${app.id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`,
-                    },
-                })
-            })
+        // // ##########
+        // if (file.metadata && file.metadata.type === 'folder') {
+        //     // delete main folder app itself
+        //     const ress = await fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps/${file.metadata.child_app_id}`, {
+        //         method: 'DELETE',
+        //         headers: {
+        //             'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`
+        //         },
+        //     })
 
-        }
-        // ##########
+        //     // grab all tagged with main folder app ID and delete
+        //     const res = await fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps?tag=${file.metadata.child_app_id}`, {
+        //         method: 'GET',
+        //         headers: {
+        //             'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`,
+        //             'Content-Type': 'application/json',
+        //         },
+        //     })
+        //     const data = await res.json()
+        //     const associated = data.data
+        //     associated?.forEach(app => {
+        //         const temp = fetch(`https://f55a3cc1035a4031b8b0e57ae18814ee.weavy.io/api/apps/${app.id}`, {
+        //             method: 'DELETE',
+        //             headers: {
+        //                 'Authorization': `Bearer wys_oP6CJGJJ7hyYqcy5A56CPCwDaMToaM4M2VCP`,
+        //             },
+        //         })
+        //     })
+
+        // }
+        // // ##########
 
 
-        if (file.id >= 1 && file.is_trashed) {
-            const response = await client.post("/api/files/" + file.id, "DELETE", "");
-            if (!response.ok) {
-                throw <ServerErrorResponse>await response.json();
-            }
-        } else {
-            throw <ServerErrorResponse>{ status: 400, title: `Could not delete ${file.name} forever.` };
-        }
+        // if (file.id >= 1 && file.is_trashed) {
+        //     const response = await client.post("/api/files/" + file.id, "DELETE", "");
+        //     if (!response.ok) {
+        //         throw <ServerErrorResponse>await response.json();
+        //     }
+        // } else {
+        //     throw <ServerErrorResponse>{ status: 400, title: `Could not delete ${file.name} forever.` };
+        // }
     }, {
         onMutate: async (variables: MutateProps) => {
             updateCacheItem(queryClient, filesKey, variables.file.id, (existingFile: FileType) => Object.assign(existingFile, { status: "pending" }));

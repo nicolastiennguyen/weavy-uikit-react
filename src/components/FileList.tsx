@@ -125,15 +125,16 @@ const FileList = ({ appId, view = "list", order, trashed = false, features, appF
                         isOpen={modalIsOpen}
                         onRequestClose={closeModal}
                         contentLabel="Delete Confirmation"
-                        style={{ overlay: { zIndex: 1000 }, content: { width: '50%', height: '50%', margin: 'auto' } }}
+                        className="files-modal"
+                        overlayClassName="files-modal-overlay"
                     >
                         <h2>Delete Confirmation</h2>
-                        <p>Are you sure you want to delete this folder and all of it's contents?</p>
-                        <button onClick={handleDeleteConfirm}>Delete</button>
-                        <button onClick={closeModal}>Cancel</button>
+                        <p>Are you sure you want to delete this folder and all of its contents?</p>
+                        <div className="filelist-button-container">
+                            <button onClick={handleDeleteConfirm} className="filelist-delete-button">Delete</button>
+                            <button onClick={closeModal} className="filelist-cancel-button">Cancel</button>
+                        </div>
                     </Modal>
-
-
                     <div className="wy-pager" ref={loadMoreRef}>
                         {isFetchingNextPage
                             ? 'Loading more...'
@@ -229,16 +230,13 @@ const FileList = ({ appId, view = "list", order, trashed = false, features, appF
 
                 </tbody>
             </table>
-            <Modal
-                isOpen={modalIsOpen}
-                onRequestClose={closeModal}
-                contentLabel="Delete Confirmation"
-                style={{ overlay: { zIndex: 1000 }, content: { width: '50%', height: '50%', margin: 'auto' } }}
-            >
+            <Modal isOpen={modalIsOpen} onRequestClose={closeModal} contentLabel="Delete Confirmation" style={{ overlay: { zIndex: 1000 }, content: { width: '50%', height: '50%', margin: 'auto' } }} >
                 <h2>Delete Confirmation</h2>
                 <p>Are you sure you want to delete this folder and all of it's contents?</p>
-                <button onClick={handleDeleteConfirm}>Delete</button>
-                <button onClick={closeModal}>Cancel</button>
+                <div className="filelist-button-container">
+                    <button onClick={handleDeleteConfirm} className="filelist-delete-button">Delete</button>
+                    <button onClick={closeModal} className="filelist-cancel-button">Cancel</button>
+                </div>
             </Modal>
             <PreviewFiles appId={appId} infiniteFiles={infiniteFiles} previewId={currentPreview} onClose={onClosePreview} features={features} appFeatures={appFeatures} />
         </>

@@ -37,16 +37,16 @@ const Files = ({
     trashed: initTrashed = false,
     features
 }: FilesProps) => {
+    const { client } = useContext(WeavyContext);
+    const [selectedFiles, setSelectedFiles] = useState<string>("");
 
     const { user } = useContext(UserContext)
-    const { client } = useContext(WeavyContext);
     const [appId, setAppId] = useState<number>(15);
     const [navigationPath, setNavigationPath] = useState([])
     const [navigationPathIDs, setNavigationPathIDs] = useState({
         'Home': 15
     })
 
-    const [selectedFiles, setSelectedFiles] = useState<string>("");
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [folderName, setFolderName] = useState('');
 
@@ -66,8 +66,6 @@ const Files = ({
 
 
     const tags = []
-    // console.log(navigationPath, navigationPathIDs, 'OUTSIDE OUTSIDE OUTSIDE')
-
     navigationPath.forEach(path => {
         if (navigationPathIDs[path] !== undefined) {
             tags.push(navigationPathIDs[path])
@@ -87,35 +85,78 @@ const Files = ({
     const [showTrashed, setShowTrashed] = useSessionState<boolean>(`files-trashed-${uid}`, initTrashed);
 
 
-    // on first load only
-    useEffect(() => {
-        const allCookies = Cookies.get();
+    //     useEffect(() => {
+    //     const currentPath = history.location.pathname;
+    //     console.log(currentPath)
+    //     const targetAppId = history.location.pathname.slice(7);
+    //     setAppId(targetAppId)
+    // }, [history]);
 
+
+    // on first load only
+    // useEffect(() => {
+    //     if (data) {
+    //         const storedAppId = Cookies.get('appId')
+    //         const storedNavigationPath = Cookies.get('navigationPath');
+    //         const storedNavigationPathIDs = Cookies.get('navigationPathIDs');
+
+    //         if (data.id != appId && storedAppId !== undefined) {
+    //             setAppId(storedAppId)
+    //             Cookies.set('appId', storedAppId)
+    //             history.push(`/files/${storedAppId}`)
+    //             // If the cookie value is empty or undefined, trying to parse it as JSON will result in an error
+    //             if (storedNavigationPath && storedNavigationPathIDs) {
+    //                 setNavigationPath(JSON.parse(storedNavigationPath))
+    //                 setNavigationPathIDs(JSON.parse(storedNavigationPathIDs))
+    //             }
+    //         } else {
+    //             setAppId(data.id)
+    //             Cookies.set('appId', data.id)
+    //             history.push('')
+    //             setNavigationPath(['Home'])
+    //         }
+    //     } else {
+    //         setAppId(15);
+    //     }
+    // }, [data]);
+
+    useEffect(() => {
         if (data) {
-            const storedAppId = Cookies.get('appId')
+            const storedAppId = Cookies.get('appId');
             const storedNavigationPath = Cookies.get('navigationPath');
             const storedNavigationPathIDs = Cookies.get('navigationPathIDs');
-            console.log(storedAppId, storedNavigationPath, storedNavigationPathIDs)
 
-            if (data.id != appId && storedAppId !== undefined) {
-                setAppId(storedAppId)
-                Cookies.set('appId', storedAppId)
-                history.push(`/files/${storedAppId}`)
-                // If the cookie value is empty or undefined, trying to parse it as JSON will result in an error
+            if (data.id !== appId && storedAppId !== undefined) {
+                setAppId(storedAppId);
+                history.push(`/files/${storedAppId}`);
                 if (storedNavigationPath && storedNavigationPathIDs) {
-                    setNavigationPath(JSON.parse(storedNavigationPath))
-                    setNavigationPathIDs(JSON.parse(storedNavigationPathIDs))
+                    setNavigationPath(JSON.parse(storedNavigationPath));
+                    setNavigationPathIDs(JSON.parse(storedNavigationPathIDs));
                 }
             } else {
-                setAppId(data.id)
-                Cookies.set('appId', data.id)
-                history.push('')
-                setNavigationPath(['Home'])
+                const currentPath = history.location.pathname;
+                const parts = currentPath.split('/');
+                if (parts.length >= 3 && parts[1] === 'files') {
+                    const targetAppId = parseInt(parts[2], 10);
+                    setAppId(targetAppId);
+                    history.push(`/files/${targetAppId}`);
+                    console.log(storedNavigationPath, storedNavigationPathIDs)
+                    if (storedNavigationPath && storedNavigationPathIDs) {
+                        setNavigationPath(JSON.parse(storedNavigationPath));
+                        setNavigationPathIDs(JSON.parse(storedNavigationPathIDs));
+                    }
+                } else {
+                    setAppId(data.id);
+                    Cookies.set('appId', data.id);
+                    history.push('');
+                    setNavigationPath(['Home']);
+                }
             }
         } else {
             setAppId(15);
         }
     }, [data]);
+
 
     useEffect(() => {
         if (status === "error" || status === "conflict") {
@@ -152,13 +193,10 @@ const Files = ({
 
     // upload files
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log('2')
         if (e.target.files) {
             for (var i = 0; i < e.target.files.length; i++) {
                 let file = e.target.files[i];
-                console.log(file)
                 let fileProps = { file: file }
-                console.log(file, fileProps)
                 uploadFileMutation.mutateAsync(fileProps, {
                     onSuccess: (data: BlobType) => {
                         //console.log("All files uploaded")
@@ -387,8 +425,6 @@ const Files = ({
         }
     };
 
-
-
     useEffect(() => {
         const handleBeforeUnload = () => {
             Cookies.set('appId', appId)
@@ -440,21 +476,23 @@ const Files = ({
     const renderNavigationPath = () => {
         return (
             <nav aria-label="breadcrumb">
-                <ol className="breadcrumb" style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'start' }}>
+                <ol className="breadcrumb">
                     {navigationPath.map((path, index) => {
                         const isLastIndex = index === navigationPath.length - 1;
 
                         return (
                             <React.Fragment key={index}>
-                                {index > 0 && <Icon.UI name="chevron-right" style={{ marginLeft: '8px', marginRight: '8px' }} />}
-                                <li className={`breadcrumb-item`} title={path} style={{ fontWeight: isLastIndex ? 'bold' : 'normal', margin: '0 4px' }}>
+                                {index > 0 && (
+                                    <Icon.UI
+                                        name="chevron-right"
+                                        className="chevron-icon"
+                                    />
+                                )}
+                                <li className={`breadcrumb-item ${isLastIndex ? 'is-last' : ''}`} title={path}>
                                     {isLastIndex ? (
                                         <span>{path}</span>
                                     ) : (
-                                        <a href="#" onClick={(e) => handleFolderClick(e, path)} style={{
-                                            textDecoration: 'none',
-                                            cursor: 'pointer',
-                                        }}>{path}</a>
+                                        <a href="#" onClick={(e) => handleFolderClick(e, path)} className="folder-link">{path}</a>
                                     )}
                                 </li>
                             </React.Fragment>
@@ -489,8 +527,8 @@ const Files = ({
                                                 <Modal
                                                     isOpen={modalIsOpen}
                                                     onRequestClose={closeModal}
-                                                    className="modal"
-                                                    overlayClassName="modal-overlay"
+                                                    className="files-modal"
+                                                    overlayClassName="files-modal-overlay"
                                                 >
                                                     <button className="close-button" onClick={closeModal}>
                                                         <Icon.UI name="close" />

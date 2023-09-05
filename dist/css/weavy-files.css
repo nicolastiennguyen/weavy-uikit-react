@@ -963,77 +963,151 @@
   }
 }
 
-.modal-overlay {
-  background-color: rgba(0, 0, 0, 0.6);
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
+.breadcrumb {
   align-items: center;
+  display: flex;
+  justify-content: start;
+  list-style: none;
+  margin: 0;
+  padding-left: 10px;
+  padding-top: 1px;
 }
 
-.modal {
-  background-color: var(--wy-white);
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 400px;
-  width: 90%;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  position: relative;
+.breadcrumb-item {
+  font-weight: normal;
+  margin: 0 4px;
+}
+
+.breadcrumb-item.is-last {
+  font-weight: bold;
+}
+
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.cancel-button {
+  background-color: var(--wy-red-500);
+  border: none;
+  border-radius: 4px;
+  color: var(--wy-white);
+  cursor: pointer;
+  padding: 10px 20px;
+}
+
+.chevron-icon {
+  margin-left: 8px;
+  margin-right: 8px;
 }
 
 .close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 20px;
-  color: var(--wy-gray-600);
-  cursor: pointer;
   background: transparent;
   border: none;
+  color: var(--wy-gray-600);
+  cursor: pointer;
+  font-size: 20px;
   padding: 5px;
+  position: absolute;
+  right: 10px;
+  top: 10px;
 }
 
 .close-button svg {
   display: block;
 }
 
-.button-container {
+.create-button {
+  background-color: var(--wy-primary-40);
+  border: none;
+  border-radius: 4px;
+  color: var(--wy-white);
+  cursor: pointer;
+  padding: 10px 20px;
+}
+
+.filelist-button-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   margin-top: 20px;
 }
 
-.input-field {
+.filelist-cancel-button {
+  background-color: var(--wy-primary-40);
+  border: none;
+  border-radius: 4px;
+  color: var(--wy-white);
+  cursor: pointer;
+  padding: 10px 20px;
+}
+
+.filelist-delete-button {
+  background-color: var(--wy-primary-40);
+  border: none;
+  border-radius: 4px;
+  color: var(--wy-white);
+  cursor: pointer;
+  padding: 10px 20px;
+  margin-right: 10px;
+}
+
+.files-modal {
+  background-color: var(--wy-white);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  padding: 20px;
+  position: relative;
+  text-align: center;
   width: 90%;
-  padding: 10px;
-  margin: 10px 0;
+}
+
+.files-modal-overlay {
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 1000;
+}
+
+.folder-link {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.input-field {
+  background-color: var(--wy-white);
   border: 1px solid var(--wy-primary-40);
   border-radius: 4px;
   color: var(--wy-primary-40);
-  background-color: var(--wy-white);
+  margin: 10px 0;
+  padding: 10px;
+  width: 90%;
 }
 
-.cancel-button {
-  background-color: var(--wy-red-500);
-  color: var(--wy-white);
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+.modal {
+  height: 50%;
+  margin: auto;
+  width: 50%;
 }
 
-.create-button {
-  background-color: var(--wy-primary-40);
-  color: var(--wy-white);
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+.modal-overlay {
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 1000;
 }
 
 .wy-grid {
